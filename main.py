@@ -205,6 +205,20 @@ def save_model(bm25, save_path="bm25_model.pkl"):
     except Exception as e:
         print(f"Error saving model: {e}")
 
+import os
+
+def delete_model(save_path="bm25_model.pkl"):
+    try:
+        # Check if file exists
+        if os.path.exists(save_path):
+            os.remove(save_path)
+            print(f"BM25 model deleted from {save_path}")
+        else:
+            print(f"No model found at {save_path}")
+    except Exception as e:
+        print(f"Error deleting model: {e}")
+
+
 # Load BM25 model
 def load_bm25_model():
     try:
@@ -305,6 +319,24 @@ if bm25 is None or index is None:
 
    
 # save_model(bm25)
+# api/update/new
+
+@app.post("/update/new")
+async def Update_Model():
+    try:
+        print("updated")
+        delete_model()
+        metadata ,image_urls=fetch_data_from_mongodb()
+        bm25, index = train_recommendation_system(metadata, image_urls)
+        if bm25 is None or index is None:
+            print("Failed to train recommendation system.")
+            return False
+        save_model(bm25)  
+        print("Model updated successfully.")
+        return True
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))    
+
 
 @app.post("/search")
 async def search_products(request: SearchRequest):
